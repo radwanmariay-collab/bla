@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Energy Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f7f6f2;
+      --surface: #ffffff;
+      --surface2: #f1f0ec;
+      --border: rgba(0,0,0,0.12);
+      --border2: rgba(0,0,0,0.22);
+      --text: #1a1a18;
+      --text2: #5f5e5a;
+      --text3: #888780;
+      --info-bg: #e6f1fb;
+      --info-text: #185fa5;
+      --info-border: rgba(24,95,165,0.3);
+      --success-bg: #eaf3de;
+      --success-text: #3b6d11;
+      --warning-bg: #faeeda;
+      --warning-text: #854f0b;
+      --danger-bg: #fcebeb;
+      --danger-text: #a32d2d;
+      --danger-border: rgba(163,45,45,0.3);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --gemini: #1a73e8;
+      --gemini-bg: #e8f0fe;
+      --gemini-border: rgba(26,115,232,0.3);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1a;
+        --surface: #252523;
+        --surface2: #2e2e2b;
+        --border: rgba(255,255,255,0.1);
+        --border2: rgba(255,255,255,0.2);
+        --text: #f0ede6;
+        --text2: #b4b2a9;
+        --text3: #888780;
+        --info-bg: #042c53;
+        --info-text: #85b7eb;
+        --info-border: rgba(133,183,235,0.3);
+        --success-bg: #173404;
+        --success-text: #97c459;
+        --warning-bg: #412402;
+        --warning-text: #ef9f27;
+        --danger-bg: #501313;
+        --danger-text: #f09595;
+        --danger-border: rgba(240,149,149,0.3);
+        --gemini: #8ab4f8;
+        --gemini-bg: #1a2744;
+        --gemini-border: rgba(138,180,248,0.3);
+      }
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+
+    header {
+      background: var(--surface);
+      border-bottom: 0.5px solid var(--border);
+      padding: 0 2rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: var(--gemini-bg);
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .logo-text { font-size: 16px; font-weight: 600; color: var(--text); }
+
+    .gemini-badge {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600;
+      color: var(--gemini);
+      background: var(--gemini-bg);
+      border: 0.5px solid var(--gemini-border);
+      border-radius: var(--radius-md);
+      padding: 4px 10px;
+    }
+    .gemini-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--gemini);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    main {
+      flex: 1;
+      max-width: 820px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 2rem 1.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .section-label {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      color: var(--text3); margin-bottom: 1rem;
+    }
+
+    h2 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+    .page-sub { font-size: 14px; color: var(--text2); margin-bottom: 1.75rem; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      border: 0.5px solid var(--border2);
+      background: var(--surface); color: var(--text);
+      border-radius: var(--radius-md);
+      padding: 9px 18px; font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: background 0.15s, transform 0.1s;
+    }
+    .btn:hover { background: var(--surface2); }
+    .btn:active { transform: scale(0.98); }
+
+    .btn-primary { background: var(--text); color: var(--bg); border-color: transparent; }
+    .btn-primary:hover { opacity: 0.87; background: var(--text); }
+
+    .btn-gemini {
+      background: var(--gemini-bg); color: var(--gemini);
+      border-color: var(--gemini-border); font-weight: 600;
+    }
+    .btn-gemini:hover { opacity: 0.87; background: var(--gemini-bg); }
+
+    .btn-danger {
+      color: var(--danger-text); border-color: var(--danger-border);
+      background: transparent; padding: 5px 12px; font-size: 13px;
+    }
+    .btn-danger:hover { background: var(--danger-bg); }
+
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 1rem; }
+    .choice-card {
+      border: 0.5px solid var(--border2); border-radius: var(--radius-lg);
+      padding: 1.5rem; cursor: pointer; background: var(--surface);
+      transition: border-color 0.15s, background 0.15s; text-align: left;
+    }
+    .choice-card:hover { background: var(--surface2); border-color: var(--gemini-border); }
+    .choice-icon { font-size: 28px; margin-bottom: 10px; }
+    .choice-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .choice-desc { font-size: 13px; color: var(--text2); }
+
+    label { font-size: 13px; color: var(--text2); display: block; margin-bottom: 5px; font-weight: 500; }
+    input, select {
+      width: 100%; border: 0.5px solid var(--border2);
+      border-radius: var(--radius-md); padding: 9px 12px;
+      font-size: 14px; background: var(--surface2); color: var(--text);
+      transition: border-color 0.15s;
+    }
+    input:focus, select:focus {
+      outline: none; border-color: var(--gemini);
+      box-shadow: 0 0 0 3px rgba(26,115,232,0.12);
+    }
+    input[readonly] { opacity: 0.6; cursor: default; }
+
+    .form-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px; margin-bottom: 1.25rem;
+    }
+
+    .error-msg { color: var(--danger-text); font-size: 13px; margin-top: 8px; min-height: 18px; }
+
+    .metric-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px; margin-bottom: 1.25rem;
+    }
+    .metric-card { background: var(--surface2); border-radius: var(--radius-md); padding: 1rem 1.1rem; }
+    .metric-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
+    .metric-value { font-size: 26px; font-weight: 600; color: var(--text); }
+    .metric-unit { font-size: 13px; color: var(--text2); }
+
+    .badge {
+      display: inline-block; font-size: 12px;
+      padding: 4px 12px; border-radius: var(--radius-md); font-weight: 600; margin-top: 4px;
+    }
+    .badge-good { background: var(--success-bg); color: var(--success-text); }
+    .badge-high { background: var(--warning-bg); color: var(--warning-text); }
+    .badge-none { background: var(--surface); color: var(--text2); border: 0.5px solid var(--border); }
+
+    .device-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 0; border-bottom: 0.5px solid var(--border);
+    }
+    .device-row:last-child { border-bottom: none; }
+    .device-icon {
+      width: 38px; height: 38px; border-radius: var(--radius-md);
+      background: var(--gemini-bg); display: flex; align-items: center;
+      justify-content: center; font-size: 17px; flex-shrink: 0;
+    }
+    .device-name { font-size: 14px; font-weight: 600; }
+    .device-meta { font-size: 12px; color: var(--text2); }
+    .device-kwh { font-size: 14px; font-weight: 600; min-width: 76px; text-align: right; }
+
+    .bar-wrap { margin: 7px 0; }
+    .bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 3px; }
+    .bar-bg { background: var(--surface2); border-radius: 4px; height: 9px; overflow: hidden; }
+    .bar-fill { height: 9px; border-radius: 4px; background: var(--gemini-bg); border: 0.5px solid var(--gemini-border); transition: width 0.5s ease; }
+    .bar-fill.top { background: var(--warning-bg); border-color: rgba(133,79,11,0.3); }
+
+    .ai-box {
+      background: var(--surface2); border-radius: var(--radius-md);
+      padding: 1.1rem; font-size: 14px; color: var(--text);
+      line-height: 1.75; white-space: pre-wrap; min-height: 60px;
+    }
+
+    .ai-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1rem; flex-wrap: wrap; gap: 8px;
+    }
+    .powered-by {
+      font-size: 11px; color: var(--gemini);
+      background: var(--gemini-bg); border: 0.5px solid var(--gemini-border);
+      border-radius: var(--radius-md); padding: 3px 8px; font-weight: 600;
+    }
+
+    .spinner {
+      display: inline-block; width: 15px; height: 15px;
+      border: 2px solid var(--border2); border-top-color: var(--gemini);
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty-state { text-align: center; padding: 2rem; color: var(--text2); font-size: 14px; }
+    .step { display: none; }
+    .step.active { display: block; }
+
+    .breadcrumb {
+      font-size: 13px; color: var(--text2); margin-bottom: 1.25rem;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .breadcrumb span { color: var(--text3); }
+
+    .db-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 10px; margin-bottom: 1.25rem;
+    }
+
+    footer {
+      text-align: center; padding: 1.5rem;
+      font-size: 12px; color: var(--text3);
+      border-top: 0.5px solid var(--border);
+    }
+
+    @media (max-width: 560px) {
+      .choice-grid { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: 1fr 1fr; }
+      header { padding: 0 1rem; }
+      main { padding: 1.25rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <span class="logo-text">Smart Energy Tracker</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="gemini-badge"><div class="gemini-dot"></div>Gemini AI</div>
+      <button class="btn" onclick="resetApp()">Reset</button>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Step 0: Welcome -->
+    <div class="step active" id="step-0">
+      <h2>Track your energy usage</h2>
+      <p class="page-sub">Calculate your monthly electricity consumption and get Google Gemini AI-powered recommendations to lower your bills.</p>
+      <div class="card">
+        <div class="section-label">Getting started</div>
+        <p style="font-size:14px;color:var(--text2);margin-bottom:1rem;">Do you know the wattage (power rating) of your devices?</p>
+        <div class="choice-grid">
+          <button class="choice-card" onclick="startMode('yes')">
+            <div class="choice-icon">🔢</div>
+            <div class="choice-title">Yes, I know the wattage</div>
+            <div class="choice-desc">Enter device name, watts, and daily usage hours manually.</div>
+          </button>
+          <button class="choice-card" onclick="startMode('no')">
+            <div class="choice-icon">📋</div>
+            <div class="choice-title">No, help me estimate</div>
+            <div class="choice-desc">Pick from common appliances and we'll estimate the wattage for you.</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 1a: Manual entry -->
+    <div class="step" id="step-1a">
+      <div class="breadcrumb">Add device <span>&rsaquo;</span> Manual entry</div>
+      <div class="card">
+        <div class="section-label">Device details</div>
+        <div class="form-grid">
+          <div>
+            <label for="m-name">Device name</label>
+            <input id="m-name" type="text" placeholder="e.g. Air Conditioner" />
+          </div>
+          <div>
+            <label for="m-watt">Power rating (watts)</label>
+            <input id="m-watt" type="number" placeholder="e.g. 1500" min="1" />
+          </div>
+          <div>
+            <label for="m-hours">Daily usage (hours)</label>
+            <input id="m-hours" type="number" placeholder="e.g. 8" min="0.1" max="24" step="0.5" />
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="addManualDevice()">Add device</button>
+          <button class="btn" onclick="goToDashboard()">View dashboard</button>
+          <button class="btn" onclick="showStep('step-0')">Back</button>
+        </div>
+        <div class="error-msg" id="m-error"></div>
+      </div>
+    </div>
+
+    <!-- Step 1b: Estimate mode -->
+    <div class="step" id="step-1b">
+      <div class="breadcrumb">Add device <span>&rsaquo;</span> Estimated wattage</div>
+      <div class="card">
+        <div class="section-label">Select your appliance</div>
+        <div class="form-grid">
+          <div>
+            <label for="e-type">Device type</label>
+            <select id="e-type" onchange="onTypeChange()">
+              <option value="">-- Choose a device --</option>
+              <option value="Air Conditioner|1500">Air Conditioner (1500 W)</option>
+              <option value="Refrigerator|150">Refrigerator (150 W)</option>
+              <option value="Washing Machine|500">Washing Machine (500 W)</option>
+              <option value="Television|100">Television (100 W)</option>
+              <option value="Laptop|65">Laptop (65 W)</option>
+              <option value="Desktop Computer|250">Desktop Computer (250 W)</option>
+              <option value="Microwave|1000">Microwave (1000 W)</option>
+              <option value="Electric Oven|2000">Electric Oven (2000 W)</option>
+              <option value="Water Heater|3000">Water Heater (3000 W)</option>
+              <option value="LED Light|10">LED Light (10 W)</option>
+              <option value="Incandescent Bulb|60">Incandescent Bulb (60 W)</option>
+              <option value="Dishwasher|1200">Dishwasher (1200 W)</option>
+              <option value="Iron|1100">Iron (1100 W)</option>
+              <option value="Vacuum Cleaner|900">Vacuum Cleaner (900 W)</option>
+              <option value="Electric Kettle|1500">Electric Kettle (1500 W)</option>
+              <option value="Fan|75">Fan (75 W)</option>
+              <option value="Hair Dryer|1500">Hair Dryer (1500 W)</option>
+              <option value="Printer|30">Printer (30 W)</option>
+              <option value="Game Console|150">Game Console (150 W)</option>
+              <option value="Electric Heater|2000">Electric Heater (2000 W)</option>
+            </select>
+          </div>
+          <div>
+            <label for="e-watt">Estimated wattage</label>
+            <input id="e-watt" type="number" readonly placeholder="Auto-filled" />
+          </div>
+          <div>
+            <label for="e-hours">Daily usage (hours)</label>
+            <input id="e-hours" type="number" placeholder="e.g. 5" min="0.1" max="24" step="0.5" />
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="addEstimatedDevice()">Add device</button>
+          <button class="btn" onclick="goToDashboard()">View dashboard</button>
+          <button class="btn" onclick="showStep('step-0')">Back</button>
+        </div>
+        <div class="error-msg" id="e-error"></div>
+      </div>
+    </div>
+
+    <!-- Step 2: Dashboard -->
+    <div class="step" id="step-2">
+      <div class="db-header">
+        <div>
+          <h2 style="margin-bottom:2px;">Dashboard</h2>
+          <p style="font-size:13px;color:var(--text2);">Your monthly electricity overview</p>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="addMore()">+ Add device</button>
+          <button class="btn btn-gemini" onclick="runGemini()">✦ Analyze with Gemini</button>
+        </div>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-label">Total consumption</div>
+          <div><span class="metric-value" id="total-kwh">0</span> <span class="metric-unit">kWh/mo</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Devices tracked</div>
+          <div><span class="metric-value" id="device-count">0</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Usage level</div>
+          <div id="usage-badge"><span class="badge badge-none">No data</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">Your devices</div>
+        <div id="device-list">
+          <div class="empty-state">No devices added yet. Click "+ Add device" to begin.</div>
+        </div>
+      </div>
+
+      <div class="card" id="bars-card" style="display:none;">
+        <div class="section-label">Consumption breakdown</div>
+        <div id="bars-content"></div>
+      </div>
+
+      <div class="card" id="ai-card" style="display:none;">
+        <div class="ai-header">
+          <div class="section-label" style="margin:0;">AI recommendations</div>
+          <span class="powered-by">✦ Powered by Google Gemini</span>
+        </div>
+        <div id="ai-output" class="ai-box"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>Smart Energy Tracker &mdash; AI analysis powered by Google Gemini &nbsp;&bull;&nbsp; Open this file in any browser</footer>
+</div>
+
+<script>
+  const GEMINI_API_KEY = 'AIzaSyD9GdPWcr-PksU82RgYbdKToy1-QbOnPVY';
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+  let mode = 'yes';
+  let devices = [];
+
+  const deviceIcons = {
+    'Air Conditioner':'❄️','Refrigerator':'🧊','Washing Machine':'🌀',
+    'Television':'📺','Laptop':'💻','Desktop Computer':'🖥️',
+    'Microwave':'📡','Electric Oven':'🔥','Water Heater':'🚿',
+    'LED Light':'💡','Incandescent Bulb':'💡','Dishwasher':'🍽️',
+    'Iron':'🔲','Vacuum Cleaner':'🌪️','Electric Kettle':'♨️',
+    'Fan':'🌬️','Hair Dryer':'💨','Printer':'🖨️',
+    'Game Console':'🎮','Electric Heater':'🔆'
+  };
+
+  function showStep(id) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function startMode(m) {
+    mode = m;
+    showStep(m === 'yes' ? 'step-1a' : 'step-1b');
+  }
+
+  function resetApp() {
+    if (devices.length > 0 && !confirm('Reset all data and start over?')) return;
+    devices = [];
+    mode = 'yes';
+    document.getElementById('ai-card').style.display = 'none';
+    showStep('step-0');
+  }
+
+  function onTypeChange() {
+    const val = document.getElementById('e-type').value;
+    document.getElementById('e-watt').value = val ? val.split('|')[1] : '';
+  }
+
+  function calcKwh(watt, hours) {
+    return (watt * hours * 30) / 1000;
+  }
+
+  function addManualDevice() {
+    const name = document.getElementById('m-name').value.trim();
+    const watt = parseFloat(document.getElementById('m-watt').value);
+    const hours = parseFloat(document.getElementById('m-hours').value);
+    const errEl = document.getElementById('m-error');
+    if (!name) { errEl.textContent = 'Please enter a device name.'; return; }
+    if (isNaN(watt) || watt <= 0) { errEl.textContent = 'Please enter a valid wattage.'; return; }
+    if (isNaN(hours) || hours <= 0 || hours > 24) { errEl.textContent = 'Please enter valid daily hours (0.1 – 24).'; return; }
+    errEl.textContent = '';
+    devices.push({ name, watt, hours, kwh: calcKwh(watt, hours) });
+    document.getElementById('m-name').value = '';
+    document.getElementById('m-watt').value = '';
+    document.getElementById('m-hours').value = '';
+    goToDashboard();
+  }
+
+  function addEstimatedDevice() {
+    const typeVal = document.getElementById('e-type').value;
+    const hours = parseFloat(document.getElementById('e-hours').value);
+    const errEl = document.getElementById('e-error');
+    if (!typeVal) { errEl.textContent = 'Please select a device type.'; return; }
+    if (isNaN(hours) || hours <= 0 || hours > 24) { errEl.textContent = 'Please enter valid daily hours (0.1 – 24).'; return; }
+    errEl.textContent = '';
+    const [name, wattStr] = typeVal.split('|');
+    const watt = parseFloat(wattStr);
+    devices.push({ name, watt, hours, kwh: calcKwh(watt, hours) });
+    document.getElementById('e-type').value = '';
+    document.getElementById('e-watt').value = '';
+    document.getElementById('e-hours').value = '';
+    goToDashboard();
+  }
+
+  function addMore() {
+    showStep(mode === 'yes' ? 'step-1a' : 'step-1b');
+  }
+
+  function goToDashboard() {
+    showStep('step-2');
+    renderDashboard();
+  }
+
+  function deleteDevice(i) {
+    if (!confirm('Remove "' + devices[i].name + '"?')) return;
+    devices.splice(i, 1);
+    renderDashboard();
+  }
+
+  function renderDashboard() {
+    const total = devices.reduce((s, d) => s + d.kwh, 0);
+    document.getElementById('total-kwh').textContent = total.toFixed(1);
+    document.getElementById('device-count').textContent = devices.length;
+
+    const badge = document.getElementById('usage-badge');
+    if (devices.length === 0) {
+      badge.innerHTML = '<span class="badge badge-none">No data</span>';
+    } else if (total < 300) {
+      badge.innerHTML = '<span class="badge badge-good">Good (&lt;300 kWh)</span>';
+    } else {
+      badge.innerHTML = '<span class="badge badge-high">High (&ge;300 kWh)</span>';
+    }
+
+    const listEl = document.getElementById('device-list');
+    if (devices.length === 0) {
+      listEl.innerHTML = '<div class="empty-state">No devices added yet.</div>';
+      document.getElementById('bars-card').style.display = 'none';
+      return;
+    }
+
+    listEl.innerHTML = devices.map((d, i) => {
+      const icon = deviceIcons[d.name] || '⚡';
+      return `<div class="device-row">
+        <div class="device-icon">${icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="device-name">${d.name}</div>
+          <div class="device-meta">${d.watt} W &bull; ${d.hours} h/day</div>
+        </div>
+        <div class="device-kwh">${d.kwh.toFixed(1)} kWh</div>
+        <button class="btn btn-danger" onclick="deleteDevice(${i})">Remove</button>
+      </div>`;
+    }).join('');
+
+    const barsCard = document.getElementById('bars-card');
+    barsCard.style.display = 'block';
+    const maxKwh = Math.max(...devices.map(d => d.kwh));
+    const sorted = [...devices].sort((a, b) => b.kwh - a.kwh);
+    document.getElementById('bars-content').innerHTML = sorted.map((d, i) => {
+      const pct = maxKwh > 0 ? Math.round(d.kwh / maxKwh * 100) : 0;
+      return `<div class="bar-wrap">
+        <div class="bar-label"><span>${d.name}</span><span>${d.kwh.toFixed(1)} kWh/month</span></div>
+        <div class="bar-bg"><div class="bar-fill ${i === 0 ? 'top' : ''}" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('');
+  }
+
+  async function runGemini() {
+    if (devices.length === 0) { alert('Please add at least one device first.'); return; }
+
+    const aiCard = document.getElementById('ai-card');
+    const aiOut = document.getElementById('ai-output');
+    aiCard.style.display = 'block';
+    aiOut.innerHTML = '<span class="spinner"></span> Gemini is analyzing your energy usage...';
+    aiOut.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    const total = devices.reduce((s, d) => s + d.kwh, 0);
+    const payload = {
+      devices: devices.map(d => ({ name: d.name, watt: d.watt, hours: d.hours })),
+      total_kwh: parseFloat(total.toFixed(2))
+    };
+
+    const prompt = `You are an energy efficiency expert. Analyze this household energy data and respond with:
+1. A short summary of the user's energy status.
+2. The top 2-3 highest energy-consuming devices identified from the data.
+3. Four to five specific, actionable, personalized recommendations to reduce electricity usage.
+4. An estimated monthly savings tip.
+
+Use plain text only. No markdown, no asterisks. Use numbered points and line breaks. Be friendly, practical, and concise. Under 260 words.
+
+Device data:
+${JSON.stringify(payload, null, 2)}`;
+
+    try {
+      const resp = await fetch(GEMINI_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 512, temperature: 0.7 }
+        })
+      });
+
+      const data = await resp.json();
+      if (data.error) throw new Error(data.error.message || 'Gemini API error');
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received.';
+      aiOut.textContent = text;
+
+    } catch (err) {
+      aiOut.textContent = 'Could not reach Gemini. Please check your internet connection and try again.\n\nError: ' + err.message;
+    }
+  }
+</script>
+</body>
+</html>
