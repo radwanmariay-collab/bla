@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مراقب الطاقة الذكي - AI Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2980b9;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --sky-blue: #e0f7fa;
+            /* لون سماوي هادئ */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--sky-blue);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+
+        .input-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            align-items: flex-end;
+            margin-bottom: 25px;
+            border: 1px solid #dee2e6;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .input-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .input-group input,
+        .input-group select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-add {
+            background-color: var(--success);
+            color: white;
+            height: 42px;
+        }
+
+        .btn-add:hover {
+            background-color: #219653;
+            transform: scale(1.02);
+        }
+
+        .main-content {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .list-section {
+            flex: 1;
+            background: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .chart-section {
+            flex: 2;
+            background: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            padding: 12px;
+            border-bottom: 1px solid #f1f1f1;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .summary-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid var(--primary);
+        }
+
+        .summary-info p {
+            margin: 5px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .status-good {
+            color: var(--success);
+        }
+
+        .status-bad {
+            color: var(--danger);
+        }
+
+        .btn-ai {
+            background-color: var(--primary);
+            color: white;
+            padding: 15px 30px;
+            font-size: 16px;
+        }
+
+        .btn-ai:hover {
+            background-color: #1a5276;
+            transform: translateY(-2px);
+        }
+
+        /* تصميم Footer (Developed by) الشيك */
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .dev-title {
+            font-size: 14px;
+            color: #7f8c8d;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .dev-names {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .dev-name {
+            font-weight: bold;
+            color: var(--primary);
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            font-size: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>مراقب الطاقة الذكي ⚡</h1>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label>أجهزة شائعة:</label>
+                <select id="presetDevice" onchange="autoFillWatt()">
+                    <option value="">إدخال يدوي...</option>
+                    <option value="1200">تكييف 1.5 حصان</option>
+                    <option value="1800">تكييف 2.25 حصان</option>
+                    <option value="200">ثلاجة</option>
+                    <option value="500">غسالة ملابس</option>
+                    <option value="2000">سخان كهربائي</option>
+                    <option value="1000">مكواة</option>
+                    <option value="100">تلفزيون LED</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>اسم الجهاز:</label>
+                <input type="text" id="deviceName" placeholder="مثال: تكييف">
+            </div>
+            <div class="input-group">
+                <label>الواط (W):</label>
+                <input type="number" id="deviceWatt" placeholder="القدرة">
+            </div>
+            <div class="input-group">
+                <label>الساعات (بحد أقصى 24):</label>
+                <input type="number" id="deviceHours" placeholder="0 - 24" max="24" min="1">
+            </div>
+            <button class="btn-add" onclick="addDevice()">إضافة</button>
+        </div>
+
+        <div class="main-content">
+            <div class="list-section">
+                <h3>الأجهزة المضافة</h3>
+                <ul id="deviceList"></ul>
+            </div>
+            <div class="chart-section">
+                <canvas id="consumptionChart"></canvas>
+            </div>
+        </div>
+
+        <div class="summary-section">
+            <div class="summary-info">
+                <p>الإجمالي: <span id="totalKwhText">0.00</span> kWh</p>
+                <p>التكلفة: <span id="totalCostText">0.00</span> ج.م</p>
+                <p>الحالة: <span id="statusText" class="status-good">جيد</span></p>
+            </div>
+            <button id="aiBtn" class="btn-ai" onclick="analyzeWithAI()">تحليل بالذكاء الاصطناعي 🤖</button>
+        </div>
+
+        <footer>
+            <span class="dev-title">Developed By</span>
+            <div class="dev-names">
+                <span class="dev-name">Eng_Radwan Mohamed</span>
+                <span class="dev-name">Eng_Elsaeed Elabd</span>
+                <span class="dev-name">Eng_Yassen Sameer</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        let devices = [];
+        let myChart = null;
+
+        function autoFillWatt() {
+            const preset = document.getElementById("presetDevice");
+            const nameInput = document.getElementById("deviceName");
+            const wattInput = document.getElementById("deviceWatt");
+
+            if (preset.value !== "") {
+                wattInput.value = preset.value;
+                nameInput.value = preset.options[preset.selectedIndex].text;
+                wattInput.disabled = true;
+            } else {
+                wattInput.value = ""; nameInput.value = ""; wattInput.disabled = false;
+            }
+        }
+
+        function calculateCost(kwh) {
+            let cost = 0;
+            if (kwh <= 50) cost = kwh * 0.68;
+            else if (kwh <= 100) cost = (50 * 0.68) + ((kwh - 50) * 0.78);
+            else if (kwh <= 200) cost = kwh * 0.95;
+            else if (kwh <= 350) cost = (200 * 0.95) + ((kwh - 200) * 1.55);
+            else if (kwh <= 650) cost = (200 * 0.95) + (150 * 1.55) + ((kwh - 350) * 1.65);
+            else cost = kwh * 2.23;
+            return cost;
+        }
+
+        function addDevice() {
+            const name = document.getElementById("deviceName").value;
+            const watt = parseFloat(document.getElementById("deviceWatt").value);
+            const hours = parseFloat(document.getElementById("deviceHours").value);
+
+            if (!name || isNaN(watt) || isNaN(hours)) {
+                alert("يرجى إدخال بيانات صحيحة.");
+                return;
+            }
+
+            // فحص حد الـ 24 ساعة
+            if (hours > 24) {
+                alert("عذراً، لا يمكن أن يتجاوز عدد ساعات العمل 24 ساعة في اليوم!");
+                document.getElementById("deviceHours").value = 24;
+                return;
+            }
+
+            const monthlyKwh = (watt * hours * 30) / 1000;
+            devices.push({ name, watt, hours, monthlyKwh });
+            updateUI();
+
+            document.getElementById("deviceHours").value = "";
+        }
+
+        function updateUI() {
+            const list = document.getElementById("deviceList");
+            list.innerHTML = "";
+            let totalKwh = 0;
+
+            devices.forEach(d => {
+                totalKwh += d.monthlyKwh;
+                const li = document.createElement("li");
+                li.innerHTML = `<span>${d.name}</span> <span>${d.monthlyKwh.toFixed(1)} kWh</span>`;
+                list.appendChild(li);
+            });
+
+            document.getElementById("totalKwhText").innerText = totalKwh.toFixed(2);
+            document.getElementById("totalCostText").innerText = calculateCost(totalKwh).toFixed(2);
+
+            const statusSpan = document.getElementById("statusText");
+            if (totalKwh > 350) {
+                statusSpan.innerText = "غير مقبول (تجاوز حد 350 ك.و)";
+                statusSpan.className = "status-bad";
+            } else {
+                statusSpan.innerText = "مقبول";
+                statusSpan.className = "status-good";
+            }
+
+            updateChart();
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById('consumptionChart').getContext('2d');
+            const labels = devices.map(d => d.name);
+            const data = devices.map(d => d.monthlyKwh);
+
+            if (myChart) myChart.destroy();
+
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'الاستهلاك (kWh)',
+                        data: data,
+                        backgroundColor: '#2980b9'
+                    }]
+                }
+            });
+        }
+        // --- 7. الاتصال بـ Gemini AI (النسخة الذكية التي تبحث عن الموديل أوتوماتيكياً) ---
+        async function analyzeWithAI() {
+            // 1. التأكد إنك ضفت أجهزة قبل التحليل
+            if (devices.length === 0) {
+                alert("يرجى إضافة أجهزة أولاً قبل التحليل!");
+                return;
+            }
+
+            const btn = document.getElementById("aiBtn");
+            btn.innerText = "جاري الاتصال... ⏳";
+            btn.disabled = true;
+
+            // ⚠️ حط مفتاح الـ API الخاص بك هنا ⚠️
+            const API_KEY = "AIzaSyD5yRK0bj6moxVc8G0SUHceEq-ZpDPFk-g";
+
+            // 2. تنبيه لو نسيت تحط المفتاح
+            if (API_KEY === "حط_مفتاحك_هنا" || API_KEY.trim() === "") {
+                alert("نسيت تحط المفتاح بتاعك يا هندسة! حطه في الكود وجرب تاني.");
+                btn.innerText = "تحليل بالذكاء الاصطناعي 🤖";
+                btn.disabled = false;
+                return;
+            }
+
+            try {
+                // 3. البحث التلقائي عن الموديل الشغال
+                const modelsUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`;
+                const modelsResponse = await fetch(modelsUrl);
+                const modelsData = await modelsResponse.json();
+
+                let targetModel = "models/gemini-1.5-flash"; // الموديل الافتراضي
+
+                if (!modelsResponse.ok) {
+                    alert("خطأ في المفتاح: " + (modelsData.error ? modelsData.error.message : "غير معروف"));
+                    return;
+                }
+
+                if (modelsData.models) {
+                    const validModel = modelsData.models.find(m =>
+                        m.supportedGenerationMethods &&
+                        m.supportedGenerationMethods.includes("generateContent") &&
+                        m.name.includes("gemini")
+                    );
+                    if (validModel) targetModel = validModel.name;
+                }
+
+                // 4. إرسال الاستهلاك للتحليل
+                const url = `https://generativelanguage.googleapis.com/v1beta/${targetModel}:generateContent?key=${API_KEY}`;
+                let totalKwh = devices.reduce((sum, d) => sum + d.monthlyKwh, 0);
+                let promptText = `استهلاكي ${totalKwh.toFixed(1)} ك.و. الأجهزة: ${devices.map(d => d.name).join(", ")}. أعطني 3 نصائح باللغة العربية لتقليل الاستهلاك.`;
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+                });
+
+                const data = await response.json();
+
+                // 5. عرض النتيجة أو رسالة الخطأ الحقيقية
+                if (!response.ok) {
+                    alert("رسالة خطأ من سيرفر جوجل:\n" + (data.error ? data.error.message : "خطأ غير معروف"));
+                } else if (data.candidates && data.candidates.length > 0) {
+                    alert("🤖 نصائح الذكاء الاصطناعي:\n\n" + data.candidates[0].content.parts[0].text.replace(/\*/g, ""));
+                } else {
+                    alert("جوجل استجابت لكن مفيش نصائح، جرب مرة تانية!");
+                }
+            } catch (error) {
+                alert("حدث خطأ في الاتصال بالإنترنت:\n" + error.message);
+            } finally {
+                // إرجاع الزرار لشكله الطبيعي في كل الحالات
+                btn.innerText = "تحليل بالذكاء الاصطناعي 🤖";
+                btn.disabled = false;
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
